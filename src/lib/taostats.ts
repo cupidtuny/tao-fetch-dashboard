@@ -120,6 +120,10 @@ export interface SubnetInfo {
   /** Fraction (0–1) of miner incentive that is burned. 1 = fully burned. */
   incentive_burn: string | number | null;
   emission: string;
+  active_miners: number | null;
+  active_validators: number | null;
+  /** Per-UID registration fee (burn) in RAO. */
+  neuron_registration_cost: string | null;
 }
 
 /** Subnet identity (name, description, links) from /api/subnet/identity/v1. */

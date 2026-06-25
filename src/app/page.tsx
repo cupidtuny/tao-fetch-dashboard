@@ -82,20 +82,36 @@ export default async function Home() {
     ]);
     taoPrice = price;
 
-    // Join pool market data with each subnet's incentive_burn and identity.
+    // Join pool market data with each subnet's incentive_burn, emission and identity.
     const burnByNetuid = new Map<number, number | null>(
       subnetsRes.data.map((s) => [s.netuid, num(s.incentive_burn)]),
     );
+    const emissionByNetuid = new Map<number, number>(
+      subnetsRes.data.map((s) => [s.netuid, num(s.emission) ?? 0]),
+    );
+    const infoByNetuid = new Map(subnetsRes.data.map((s) => [s.netuid, s]));
     const identityByNetuid = new Map<number, SubnetIdentity>(
       identitiesRes.data.map((i) => [i.netuid, i]),
     );
 
+    // Emission share is relative to the whole network (all subnets).
+    const totalEmission = [...emissionByNetuid.values()].reduce((s, e) => s + e, 0);
+
     rows = poolsRes.data
-      .map((p) => ({
-        ...p,
-        incentive_burn: burnByNetuid.get(p.netuid) ?? null,
-        identity: identityByNetuid.get(p.netuid) ?? null,
-      }))
+      .map((p) => {
+        const info = infoByNetuid.get(p.netuid);
+        return {
+          ...p,
+          incentive_burn: burnByNetuid.get(p.netuid) ?? null,
+          emission_share:
+            totalEmission > 0
+              ? (emissionByNetuid.get(p.netuid) ?? 0) / totalEmission
+              : null,
+          active_miners: info?.active_miners ?? null,
+          neuron_registration_cost: info?.neuron_registration_cost ?? null,
+          identity: identityByNetuid.get(p.netuid) ?? null,
+        };
+      })
       // Drop subnets whose incentive is fully (100%) burned.
       .filter((p) => p.incentive_burn == null || p.incentive_burn < 1);
   } catch (e) {

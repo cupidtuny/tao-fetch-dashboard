@@ -22,13 +22,17 @@ function LinkPill({ href, label }: { href: string; label: string }) {
   );
 }
 
-/** Inline detail shown when a subnet row is expanded. Purely presentational. */
+/** Inline detail shown when a subnet row is expanded. */
 export function SubnetDetail({
   identity,
   pool,
+  hidden,
+  onToggleHide,
 }: {
   identity: SubnetIdentity | null;
   pool: SubnetPool;
+  hidden: boolean;
+  onToggleHide: () => void;
 }) {
   const name = identity?.subnet_name ?? pool.name ?? `Subnet ${pool.netuid}`;
 
@@ -99,12 +103,33 @@ export function SubnetDetail({
         )}
       </div>
 
-      <div className="shrink-0 sm:w-40">
-        <div className="text-xs uppercase tracking-wide text-neutral-500">
-          7-Day Price
-        </div>
-        <div className="mt-2">
-          <Sparkline points={pool.seven_day_prices} />
+      <div className="shrink-0 space-y-4 sm:w-40">
+        <a
+          href={`https://taostats.io/subnets/${pool.netuid}/metagraph?order=incentive%3Adesc`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="block rounded-lg bg-neutral-100 px-3 py-2 text-center text-sm font-medium text-neutral-900 transition-colors hover:bg-white"
+        >
+          Subnet view ↗
+        </a>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleHide();
+          }}
+          className="block w-full rounded-lg border border-neutral-700 px-3 py-2 text-center text-sm text-neutral-300 transition-colors hover:border-neutral-500 hover:text-neutral-100"
+        >
+          {hidden ? "Unhide subnet" : "Hide subnet"}
+        </button>
+        <div>
+          <div className="text-xs uppercase tracking-wide text-neutral-500">
+            7-Day Price
+          </div>
+          <div className="mt-2">
+            <Sparkline points={pool.seven_day_prices} />
+          </div>
         </div>
       </div>
     </div>
